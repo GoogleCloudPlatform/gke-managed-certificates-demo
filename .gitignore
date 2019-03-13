@@ -1,0 +1,32 @@
+# OSX leaves these everywhere on SMB shares
+._*
+
+# OSX trash
+.DS_Store
+
+# Emacs save files
+*~
+\#*\#
+.\#*
+
+# Vim-related files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+
+# Local .terraform directories
+**/.terraform/*
+*/terraform.tfvars
+
+# kustomize folder
+demoApp/kustomized/
+
+# .tfstate files
+*/*.tfstate
+*/*.tfstate.*
+
+# Ignore pem files
+kubernetes/tls/*
+terraform/*json
