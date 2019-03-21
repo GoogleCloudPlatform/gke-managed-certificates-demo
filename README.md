@@ -27,7 +27,7 @@
 
 ## Introduction
 
-A Kubernetes Ingress manages external access to your services in a cluster. It's an object which defines rules for routing external HTTP(S) traffic to applications running in a cluster. An Ingress object is associated with one or more Service objects, each of which is associated with a set of Pods. Ingress allows you to do path based and subdomain based routing to your backend services.
+A Kubernetes Ingress manages external access to your services in a cluster. It's an object in Kubernetes which defines rules for routing external HTTP(S) traffic to applications running in a cluster. An Ingress object is associated with one or more Service objects, each of which is associated with a set of Pods. Ingress allows you to do path based and subdomain based routing to your backend services.
 
 Additionally you can terminate TLS for your services through Ingress. While this usually requires you to create and manage your own certificates, GKE supports the use of Google managed certificates. This takes away the burden of manually requesting and managing SSL certificates to ensure secure connections to your services.
 
@@ -42,9 +42,9 @@ The diagram below summarize the steps to deploy an ingress using a Google manage
 
 ## Assumptions
 
-This guide assumes you own a domain name with a valid DNS managed zone so we can use it to add a DNS record for our Ingress. If you currently own a domain name without a DNS managed zone, follow these [instructions](https://cloud.google.com/dns/zones/) to create one in your project.
+This guide assumes you own a domain name with a valid DNS managed zone so we can use it to add a DNS record for the Ingress. If you currently own a domain name without a DNS managed zone, follow these [instructions](https://cloud.google.com/dns/zones/) to create one in your project. You need to bring your own domain for this demo to work, as a valid SSL certificate requires a domain.
 
-In this demo we will be using a managed zone called `fakedomain-zone` which contains all DNS records for the `fakedomain.com` domain. we chose the following url for our Ingress: `heyingress.fakedomain.com`. We will export those in environment variables later before we deploy the demo.
+In this demo we will be using a managed zone called `fakedomain-zone` which contains all DNS records for the `fakedomain.com` domain. we chose the following url for our Ingress: `heyingress.fakedomain.com`. We will export those in environment variables later before we deploy the demo. You will need to replace those values with your own domain name.
 
 ## Prerequisites
 
@@ -52,7 +52,37 @@ In order to complete the steps outlined below, several tools must be installed a
 
 ### Cloud Project
 
-You will need access to a Google Cloud Project with billing enabled. See **Creating and Managing Projects** (https://cloud.google.com/resource-manager/docs/creating-managing-projects) for creating a new project. To make cleanup easier it's recommended to create a new project.
+You will need access to a Google Cloud Project with billing enabled. See [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects) for creating a new project. To make cleanup easier it's recommended to create a new project.
+
+### Run Demo in a Google Cloud Shell
+
+Click the button below to run the demo in a [Google Cloud Shell][10].
+
+[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/gke-managed-certificates-demo.git&amp;cloudshell_image=gcr.io/graphite-cloud-shell-images/terraform:latest&amp;cloudshell_tutorial=README.md)
+
+Install `kubstomize` in Cloud Shell by following these commands:
+
+```console
+opsys=linux
+curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+  grep browser_download |\
+  grep $opsys |\
+  cut -d '"' -f 4 |\
+  xargs curl -O -L
+mv kustomize_*_${opsys}_amd64 kustomize
+chmod u+x kustomize
+sudo mv kustomize /usr/local/bin/
+```
+
+Then, execute this command in order to setup gcloud cli. Please setup your region and zone.
+
+```console
+gcloud init
+```
+
+### Supported Operating Systems
+
+This project will run on macOS, Linux, or in a [Google Cloud Shell][10].
 
 ### Required GCP APIs
 
@@ -72,7 +102,7 @@ The kubectl CLI is used to interact with both Kubernetes Engine and kubernetes i
 ### Install Kustomize
 
 Kustomize is a tool for customization of kubernetes YAML files. Kustomize will take the original Kubernetes manifests YAML files and customize them while leaving the originals untouched. To install Kustomize on your OS, follow the instructions [here](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md).
-we will be using the manifests under `demoApp/base_manifests` for our applications while customizing them later using Kustomize CLI
+we will be using the manifests under `demo-app/base-manifests` for our applications while customizing them later using Kustomize CLI
 
 ### Install Terraform
 
@@ -91,10 +121,10 @@ The Terraform configuration will execute against your personal account's GCP env
 The end goal is to deploy a GKE Ingress that uses a Google managed certificate for ssl termination. In this example, we will create:
 
 1. GKE cluster deployed with terraform
-1. public static ip deployed with terraform and will be used as our Ingress IP
+1. Public static ip deployed with terraform and will be used as our Ingress IP
 1. DNS record deployed pointing our domain name to our Ingress ip. It is also deployed with terraform
 1. Google managed certificated for our domain deployed using gcloud since terraform has no support yet for this beta feature.
-1. kubernetes application that contains a deployment, service and an Ingress which uses the certificate customized with Kustomize and deployed with kubectl
+1. Kubernetes application that contains a deployment, service and an Ingress which uses the certificate customized with Kustomize and deployed with kubectl
 
 
 ### Terraform structure
@@ -103,7 +133,7 @@ There are four Terraform files provided in this example. The first one, `main.tf
 
 ### Kustomize explained
 
-Kustomize lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is. The idea behind kustomize is taking a set of generic kubernetes manifests and describing how you want to customize them in a `kustomization.yaml` file. For our case, we used a generic application that uses Ingress from this [link](https://cloud.google.com/kubernetes-engine/docs/how-to/load-balance-ingress). You can find the YAML files for this App under `demoApp/base_manifests` folder. Later, we will customize them using kustomize to add some annotations to the Ingress resource.
+Kustomize lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is. The idea behind kustomize is taking a set of generic kubernetes manifests and describing how you want to customize them in a `kustomization.yaml` file. For our case, we used a generic application that uses Ingress from this [link](https://cloud.google.com/kubernetes-engine/docs/how-to/load-balance-ingress). You can find the YAML files for this App under `demo-app/base-manifests` folder. Later, we will customize them using kustomize to add some annotations to the Ingress resource.
 
 A summary of the steps to create a customized Kubernetes manifest are listed below:
 
@@ -112,7 +142,7 @@ A summary of the steps to create a customized Kubernetes manifest are listed bel
 1. Create a patch file describing how you want to update those resources from the original ones and add it to kustomization.yaml file with the `kustomize edit add patch [filename]` command.
 1. Finally, use `kustomize build` command to generate the final YAML manifest.
 
-more documentation about kustomize and how you can use it can be found in their official [website](https://kustomize.io/)
+More documentation about kustomize and how you can use it can be found in their official [website](https://kustomize.io/).
 
 ### Deploying the scenario
 
@@ -125,17 +155,51 @@ Open a terminal and export these variables according to your setup:
 - `export DOMAIN="heyingress.fakedomain.com"`
 - `export MANAGED_ZONE="fakedomain-zone"`
 
+You will need to replace our fake values with your real domain.  For instance if you owned google.com you could use.
+
+- `export DOMAIN="heyingress.google.com"`
+- `export MANAGED_ZONE="google-zone"`
+
+But as we mentioned you need your own domain for this demo to function.
+
 Now you can execute the following make command to run the demo:
 
+```bash
+make create
 ```
-$ make create
+
+Once completed, The certificate can take up to an hour before it becomes active.
+you can check the status of the certificiate with gcloud:
+
+```bash
+gcloud beta compute ssl-certificates list heyingress
+```
+
+once the certificate is active, you can use the describe action to see the certificate details:
+
+```bash
+gcloud compute ssl-certificates describe heyingress
+```
+
+the application deployed will be available on https://heyingress.fakedomain.com
+
+Drop the URL in the browser or use curl to verify that the application is deployed.
+
+```bash
+curl https://heyingress.fakedomain.com
+```
+
+lookup the deployed ingress and see the annotations added to make it use the managed certificate using this command:
+
+```bash
+kubectl describe ingress demo-ing
 ```
 
 ## Validation
 
 To validate the scenario was successfull and our Ingress is properly configured run:
 
-```
+```bash
 make validate
 ```
 
@@ -143,8 +207,8 @@ make validate
 
 When you are finished with this example you will want to clean up the resources that were created to avoid accruing charges:
 
-```
-$ terraform teardown
+```bash
+make teardown
 ```
 
 Since Terraform tracks the resources it created it is able to tear them all down.

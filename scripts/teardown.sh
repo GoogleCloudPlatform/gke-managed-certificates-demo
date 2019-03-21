@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 # "---------------------------------------------------------"
 # "-                                                       -"
-# "-  Delete uninstalls the demo application and deletes              -"
+# "-  Delete uninstalls the demo application and deletes   -"
 # "-  the GKE cluster                                      -"
 # "-                                                       -"
 # "---------------------------------------------------------"
@@ -30,10 +30,10 @@ ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 source "$ROOT/scripts/common.sh"
 
 # teardown the ingress resource
-pushd "$ROOT/demoApp/kustomized"
+pushd "$ROOT/demo-app/kustomized" || exit 1
 # generate the kubernetes manifests and delete them with kubectl
 kustomize build . | kubectl delete -f -
-popd
+popd || exit 1
 
 # Wait for Kubernetes resources to be deleted before deleting the cluster
 # Also, filter out the resources to what would specifically be created for
@@ -71,4 +71,4 @@ else
 fi
 
 # remove kustomized folder
-rm -rf "$ROOT/kube_manifests/kustomized"
+rm -rf "$ROOT/kube-manifests/kustomized"

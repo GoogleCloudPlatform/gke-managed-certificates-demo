@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,29 +15,15 @@
 # Refer to the kubernetes documentation for more information about the API
 # https://kubernetes.io/docs/reference/
 
-# This deployment creates three relicas of the hello-app container
+# This is an ingress to expose the demo-svc service publicly
 # the source of this yaml is inspired from this tutorial
 # https://cloud.google.com/kubernetes-engine/docs/how-to/load-balance-ingress
 
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: extensions/v1beta1
+kind: Ingress
 metadata:
-  name: demo-deployment
+  name: demo-ing
 spec:
-  selector:
-    matchLabels:
-      greeting: hello
-      department: world
-  replicas: 3
-  template:
-    metadata:
-      labels:
-        greeting: hello
-        department: world
-    spec:
-      containers:
-      - name: hello
-        image: "gcr.io/google-samples/hello-app:2.0"
-        env:
-        - name: "PORT"
-          value: "50000"
+  backend:
+    serviceName: demo-svc
+    servicePort: 60000

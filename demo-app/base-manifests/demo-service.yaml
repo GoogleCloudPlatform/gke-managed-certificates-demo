@@ -11,3 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Refer to the kubernetes documentation for more information about the API
+# https://kubernetes.io/docs/reference/
+
+# This is a service to interface the hello-app pods
+# the source of this yaml is inspired from this tutorial
+# https://cloud.google.com/kubernetes-engine/docs/how-to/load-balance-ingress
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-svc
+spec:
+  type: NodePort
+  selector:
+    greeting: hello
+    department: world
+  ports:
+  - protocol: TCP
+    port: 60000
+    targetPort: 50000

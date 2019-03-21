@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,20 +53,20 @@ gcloud container clusters get-credentials "${CLUSTER_NAME}" --region "${certific
 echo "4. deploy an application with an ingress to our gke cluster"
 
 # create a separate folder for kustomize manifests and move to it
-mkdir -p "$ROOT/demoApp/kustomized"
-pushd "$ROOT/demoApp/kustomized"
+mkdir -p "$ROOT/demo-app/kustomized"
+pushd "$ROOT/demo-app/kustomized"
 # initialize the kustomization file.
 # This file should declare all resources we want to deploy, and any customization to apply to them
 touch kustomization.yaml
 
-# add all resources of the demoApp base application to kustomization file
+# add all resources of the demo-app base application to kustomization file
 # these resources contains kubernetes manfiests for
 # a deployment, a service and an ingress to expose the service.
-kustomize edit add resource ../base_manifests/*
+kustomize edit add resource ../base-manifests/*
 
 # create a patch file to add annotations to the ingress spec to use previously allocated ip
 # and created certificate.
-cat <<-EOF > add_ingress_annotations.yaml
+cat <<-EOF > add-ingress-annotations.yaml
 	apiVersion: extensions/v1beta1
 	kind: Ingress
 	metadata:
@@ -78,7 +78,7 @@ cat <<-EOF > add_ingress_annotations.yaml
 EOF
 
 # add the patch file to the kustomization file
-kustomize edit add patch add_ingress_annotations.yaml
+kustomize edit add patch add-ingress-annotations.yaml
 
 # generate the final kubernetes manifests and apply them to kubectl to deploy our app
 kustomize build . | kubectl apply -f -
