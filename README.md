@@ -1,9 +1,7 @@
 # Building Managed Certificates for your Kubernetes Engine Cluster
 
 ## Table of Contents
-
-- [Building Managed Certificates for your Kubernetes Engine Cluster](#building-managed-certificates-for-your-kubernetes-engine-cluster)
-  * [Table of Contents](#table-of-contents)
+<!-- TOC -->
   * [Introduction](#introduction)
   * [Process](#process)
   * [Assumptions](#assumptions)
@@ -24,10 +22,10 @@
   * [Teardown](#teardown)
   * [Troubleshooting](#troubleshooting)
   * [Relevant Material](#relevant-material)
-
+<!-- TOC -->
 ## Introduction
 
-A Kubernetes Ingress manages external access to your services in a cluster. It's an object in Kubernetes which defines rules for routing external HTTP(S) traffic to applications running in a cluster. An Ingress object is associated with one or more Service objects, each of which is associated with a set of Pods. Ingress allows you to do path based and subdomain based routing to your backend services.
+A Kubernetes Ingress manages external access to your services in a cluster. It's an object in Kubernetes which defines rules for routing external HTTP(S) traffic to applications running in a cluster. An Ingress object is associated with one or more Service objects, each of which is associated with a set of Pods. Ingress allows path and subdomain based routing to your backend services.
 
 Additionally you can terminate TLS for your services through Ingress. While this usually requires you to create and manage your own certificates, GKE supports the use of Google managed certificates. This takes away the burden of manually requesting and managing SSL certificates to ensure secure connections to your services.
 
@@ -121,10 +119,10 @@ The Terraform configuration will execute against your personal account's GCP env
 The end goal is to deploy a GKE Ingress that uses a Google managed certificate for ssl termination. In this example, we will create:
 
 1. GKE cluster deployed with terraform
-1. Public static ip deployed with terraform and will be used as our Ingress IP
-1. DNS record deployed pointing our domain name to our Ingress ip. It is also deployed with terraform
-1. Google managed certificated for our domain deployed using gcloud since terraform has no support yet for this beta feature.
-1. Kubernetes application that contains a deployment, service and an Ingress which uses the certificate customized with Kustomize and deployed with kubectl
+2. Public static ip deployed with terraform and will be used as our Ingress IP
+3. DNS record deployed pointing our domain name to our Ingress ip. It is also deployed with terraform
+4. Google managed certificated for our domain deployed using gcloud since terraform has no support yet for this beta feature.
+5. Kubernetes application that contains a deployment, service and an Ingress which uses the certificate customized with Kustomize and deployed with kubectl
 
 
 ### Terraform structure
@@ -149,13 +147,13 @@ More documentation about kustomize and how you can use it can be found in their 
 To build out the environment, first we need to export two variables.
 
 The first one contains the domain name we want to assign to our Ingress.
-The second is the DNS managed zone name where we will create the DNS record for Ingress.
+The second is the DNS managed zone name which creates the DNS record for Ingress.
 
 Open a terminal and export these variables according to your setup:
 - `export DOMAIN="heyingress.fakedomain.com"`
 - `export MANAGED_ZONE="fakedomain-zone"`
 
-You will need to replace our fake values with your real domain.  For instance if you owned google.com you could use.
+You will need to replace our fake values with your real domain. For instance if you owned google.com you could use.
 
 - `export DOMAIN="heyingress.google.com"`
 - `export MANAGED_ZONE="google-zone"`
@@ -164,50 +162,50 @@ But as we mentioned you need your own domain for this demo to function.
 
 Now you can execute the following make command to run the demo:
 
-```bash
+```console
 make create
 ```
 
 Once completed, The certificate can take up to an hour before it becomes active.
 you can check the status of the certificiate with gcloud:
 
-```bash
+```console
 gcloud beta compute ssl-certificates list heyingress
 ```
 
-once the certificate is active, you can use the describe action to see the certificate details:
+Once the certificate is active, you can use the describe action to see the certificate details:
 
-```bash
+```console
 gcloud compute ssl-certificates describe heyingress
 ```
 
-the application deployed will be available on https://heyingress.fakedomain.com
+The application deployed will be available on https://heyingress.fakedomain.com
 
 Drop the URL in the browser or use curl to verify that the application is deployed.
 
-```bash
+```console
 curl https://heyingress.fakedomain.com
 ```
 
-lookup the deployed ingress and see the annotations added to make it use the managed certificate using this command:
+To view the deployed ingress and the annotations using the managed certificate, run:
 
-```bash
+```console
 kubectl describe ingress demo-ing
 ```
 
 ## Validation
 
-To validate the scenario was successfull and our Ingress is properly configured run:
+Validation is fully automated. In order to validate that resources are installed and Ingress is properly configured, run:
 
-```bash
+```console
 make validate
 ```
 
 ## Teardown
 
-When you are finished with this example you will want to clean up the resources that were created to avoid accruing charges:
+Teardown is fully automated. The destroy script deletes all resources created using Terraform. Terraform variable configuration and state files are also cleaned if Terraform destroy is successful. To delete all created resources in GCP, run:
 
-```bash
+```console
 make teardown
 ```
 
