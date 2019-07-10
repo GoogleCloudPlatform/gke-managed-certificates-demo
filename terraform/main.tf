@@ -16,17 +16,17 @@ limitations under the License.
 
 // managed certificate to use with ingress lb
 resource "google_compute_managed_ssl_certificate" "managed_certificate" {
-  provider = "google-beta"
-  name     = "${element(split(".", var.domain),0)}"
+  provider = google-beta
+  name     = element(split(".", var.domain), 0)
 
   managed {
-    domains = ["${var.domain}"]
+    domains = [var.domain]
   }
 }
 
 // public ip reserved for ingress load balancer
 resource "google_compute_global_address" "ingress_ip" {
-  name = "${element(split(".", var.domain),0)}"
+  name = element(split(".", var.domain), 0)
 }
 
 // domain name to associate to ingress lb
@@ -34,21 +34,22 @@ resource "google_dns_record_set" "dns" {
   name         = "${var.domain}."
   type         = "A"
   ttl          = 300
-  managed_zone = "${var.managed_zone}"
+  managed_zone = var.managed_zone
 
-  rrdatas = ["${google_compute_global_address.ingress_ip.address}"]
+  rrdatas = [google_compute_global_address.ingress_ip.address]
 }
 
 // gke cluster
-data "google_compute_zones" "available" {}
+data "google_compute_zones" "available" {
+}
 
 resource "google_container_cluster" "primary" {
-  name               = "${var.cluster_name}"
-  zone               = "${data.google_compute_zones.available.names[0]}"
+  name               = var.cluster_name
+  zone               = data.google_compute_zones.available.names[0]
   initial_node_count = 3
 
   additional_zones = [
-    "${data.google_compute_zones.available.names[1]}",
+    data.google_compute_zones.available.names[1],
   ]
 
   node_config {
