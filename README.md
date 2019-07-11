@@ -78,6 +78,11 @@ Then, execute this command in order to setup gcloud cli. Please setup your regio
 gcloud init
 ```
 
+### Tools
+1. [Terraform >= 0.12.3](https://www.terraform.io/downloads.html)
+2. [Google Cloud SDK version >= 253.0.0](https://cloud.google.com/sdk/docs/downloads-versioned-archives)
+3. [kubectl matching the latest GKE version](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
 ### Supported Operating Systems
 
 This project will run on macOS, Linux, or in a [Google Cloud Shell][10].
