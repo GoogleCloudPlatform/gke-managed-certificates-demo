@@ -15,13 +15,13 @@ limitations under the License.
 */
 
 provider "google" {
-  project = "${var.project}"
-  region  = "${var.region}"
-  version = "~> 1.20"
+  project = var.project
+  region  = var.region
+  version = "~> 2.10.0"
 }
 
 provider "google-beta" {
-  project = "${var.project}"
-  region  = "${var.region}"
-  version = "~> v2.1.0"
+  project = var.project
+  region  = var.region
+  version = "~> v2.10.0"
 }
